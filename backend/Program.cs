@@ -1,41 +1,38 @@
-var builder = WebApplication.CreateBuilder(args);
+using backend.Data; // DbContext and data models
+using backend.Services; // Service interfaces and implementations
+using Microsoft.EntityFrameworkCore; // EF Core for DbContext configuration
+
+var builder = WebApplication.CreateBuilder(args); // create app builder / host
 
 // Add services to the container.
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-builder.Services.AddOpenApi();
+builder.Services.AddControllers(); // register MVC controllers
+builder.Services.AddEndpointsApiExplorer(); // enable minimal API explorer for swagger
+builder.Services.AddSwaggerGen(); // add swagger generation
 
-var app = builder.Build();
+// Configure EF Core with SQLite using connection string from config
+builder.Services.AddDbContext<LibraryContext>(options =>
+    options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+// Service layer registration (inject IBookService with BookService implementation)
+builder.Services.AddScoped<IBookService, BookService>();
+
+// CORS (allow Vite dev server by default)
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("dev", policy =>
+        policy.WithOrigins("http://localhost:5173") // allow local frontend dev server
+              .AllowAnyHeader()
+              .AllowAnyMethod());
+});
+
+var app = builder.Build(); // build the app
 
 // Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.MapOpenApi();
-}
+app.UseSwagger(); // enable middleware that generates swagger.json
+app.UseSwaggerUI(); // enable swagger UI at /swagger
 
-app.UseHttpsRedirection();
-
-var summaries = new[]
-{
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
-
-app.MapGet("/weatherforecast", () =>
-{
-    var forecast =  Enumerable.Range(1, 5).Select(index =>
-        new WeatherForecast
-        (
-            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-            Random.Shared.Next(-20, 55),
-            summaries[Random.Shared.Next(summaries.Length)]
-        ))
-        .ToArray();
-    return forecast;
-})
-.WithName("GetWeatherForecast");
+app.UseHttpsRedirection(); // HTTP to HTTPS
+app.UseCors("dev"); // apply the named CORS policy
+app.MapControllers(); // map controller routes to endpoints
 
 app.Run();
-
-record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}
