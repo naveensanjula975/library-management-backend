@@ -1,6 +1,33 @@
-@backend_HostAddress = http://localhost:5119
+@host = http://localhost:5173
+@contentType = application/json
 
-GET {{backend_HostAddress}}/weatherforecast/
-Accept: application/json
+### Get all books
+GET {{host}}/api/books
 
-###
+### Get book by ID
+GET {{host}}/api/books/1
+
+### Create new book
+POST {{host}}/api/books
+Content-Type: {{contentType}}
+
+{
+  "title": "Clean Code",
+  "author": "Robert C. Martin",
+  "description": "A Handbook of Agile Software Craftsmanship",
+  "publishedYear": 2008
+}
+
+### Update book
+PUT {{host}}/api/books/1
+Content-Type: {{contentType}}
+
+{
+  "title": "Design Patterns (Updated)",
+  "author": "Gang of Four",
+  "description": "Elements of Reusable Object Oriented Software - Updated Edition",
+  "publishedYear": 1994
+}
+
+### Delete book
+DELETE {{host}}/api/books/3
