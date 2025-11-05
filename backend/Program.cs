@@ -15,6 +15,8 @@ builder.Services.AddDbContext<LibraryContext>(options =>
 
 // Service layer registration (inject IBookService with BookService implementation)
 builder.Services.AddScoped<IBookService, BookService>();
+// Service layer registration for authentication
+builder.Services.AddScoped<IAuthService, AuthService>();
 
 // CORS (allow Vite dev server by default)
 builder.Services.AddCors(options =>
